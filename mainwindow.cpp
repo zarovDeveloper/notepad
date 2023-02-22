@@ -26,20 +26,19 @@ void MainWindow::on_createAction_triggered() //кнопка "Создать"
 {
     QString oldPath = this->windowTitle(); //узнали название документа
 
-    if (count(oldPath.begin(), oldPath.end(), "*"))
+    if (count(oldPath.begin(), oldPath.end(), "*")) //поиск изменения в документе
     {
         QMessageBox msgBox;
         msgBox.setWindowTitle("Блокнот");
-        msgBox.setText("Вы хотите сохранить изменения в файле \n" + oldPath.remove("*") + "?");
+        msgBox.setText("Вы хотите сохранить изменения в файле \n" + fileName + "?");
         msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
         msgBox.setDefaultButton(QMessageBox::Save);
         int res = msgBox.exec();
-        oldPath.append("*");
         switch (res)
         {//какую кнопку нажал юзер
             case QMessageBox::Save:
             {// Нажата кнопка Save
-                if (fileExists(oldPath.remove("*"))) //если файл существует в системе
+                if (fileExists(fileName)) //если файл существует в системе
                     on_saveAction_triggered(); //сохраняем файл в системе
                 else //если не существует
                     on_saveAsAction_triggered(); //сохраняем файл
@@ -74,16 +73,15 @@ void MainWindow::on_openAction_triggered() //кнопка "Открыть"
     {//если изменяли документ, то вызываем окно сообщением
         QMessageBox msgBox;
         msgBox.setWindowTitle("Блокнот");
-        msgBox.setText("Вы хотите сохранить изменения в файле \n" + oldPath.remove("*") + "?");
+        msgBox.setText("Вы хотите сохранить изменения в файле \n" + fileName + "?");
         msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
         msgBox.setDefaultButton(QMessageBox::Save);
         int res = msgBox.exec();
-        oldPath.append("*");
         switch (res)
         {//какую кнопку нажал юзер
             case QMessageBox::Save:
             {// Нажата кнопка Save
-                if (fileExists(oldPath.remove("*"))) //если файл существует в системе
+                if (fileExists(fileName)) //если файл существует в системе
                     on_saveAction_triggered(); //сохраняем файл в системе
                 else //если не существует
                     on_saveAsAction_triggered(); //сохраняем файл
