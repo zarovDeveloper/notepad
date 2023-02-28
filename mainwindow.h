@@ -55,6 +55,7 @@ private slots:
 
     void closeEvent(QCloseEvent *event); //слот выхода из документа
 
+
 private:
     Ui::MainWindow *ui;
 

@@ -42,7 +42,6 @@
      <string>Файл</string>
     </property>
     <addaction name="createAction"/>
-    <addaction name="separator"/>
     <addaction name="openAction"/>
     <addaction name="saveAction"/>
     <addaction name="saveAsAction"/>

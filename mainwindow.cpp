@@ -41,7 +41,34 @@ void MainWindow::on_createAction_triggered() //кнопка "Создать"
                 if (fileExists(fileName)) //если файл существует в системе
                     on_saveAction_triggered(); //сохраняем файл в системе
                 else //если не существует
-                    on_saveAsAction_triggered(); //сохраняем файл
+                {
+                    QString oldPath = this->windowTitle(); //старое название
+                    fileName = QFileDialog::getSaveFileName(this, tr("Сохранить файл"), "", tr("Текстовые файлы (*.txt)")); //сохранить файл
+
+                    if (!fileName.isEmpty()) //проверка на название файла
+                    {
+                        QFile file(fileName.remove("*")); //читаем название
+
+                        if (!file.open(QIODevice::WriteOnly)) //если ошибка в файле
+                        {
+                            QMessageBox::warning(this, tr("Ошибка"), tr("Не могу сохранить файл") + file.errorString());
+                            return;
+                        }
+                        else
+                        {//нет ошибок
+                            QString fileTitle = changedTitle(fileName);
+                            QTextStream stream(&file); //сохранение текста
+                            stream.setCodec("UTF-8"); //записываем в кодеке ЮТФ-8
+                            stream << ui->textEdit->toPlainText(); //записывание текста
+                            stream.flush(); //чистка буферизованных данных, ожидающих записи на утройстве
+                            file.close(); //закрыли файл
+                            setWindowTitle(fileTitle); //поменяли название окна
+                        }
+                    }
+                    else //если нажали отмена; //сохраняем файл
+                        break;
+                }
+                setWindowTitle(oldPath.remove("*"));
                 on_createAction_triggered(); //вызываем создание еще раз
                 break;
             }
@@ -73,7 +100,7 @@ void MainWindow::on_openAction_triggered() //кнопка "Открыть"
     {//если изменяли документ, то вызываем окно сообщением
         QMessageBox msgBox;
         msgBox.setWindowTitle("Блокнот");
-        msgBox.setText("Вы хотите сохранить изменения в файле \n" + fileName + "?");
+        msgBox.setText("Вы хотите сохранить изменения в файле \n" + fileName.remove("*") + "?");
         msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
         msgBox.setDefaultButton(QMessageBox::Save);
         int res = msgBox.exec();
@@ -84,16 +111,50 @@ void MainWindow::on_openAction_triggered() //кнопка "Открыть"
                 if (fileExists(fileName)) //если файл существует в системе
                     on_saveAction_triggered(); //сохраняем файл в системе
                 else //если не существует
-                    on_saveAsAction_triggered(); //сохраняем файл
+                {
+                    QString fileSaveName(fileName);
 
+                    fileName = QFileDialog::getSaveFileName(this, tr("Сохранить файл"), "", tr("Текстовые файлы (*.txt)")); //сохранить файл
+
+                    if (!fileName.isEmpty()) //проверка на название файла
+                    {
+                        QFile file(fileName); //читаем название
+
+                        if (!file.open(QIODevice::WriteOnly)) //если ошибка в файле
+                        {
+                            QMessageBox::warning(this, tr("Ошибка"), tr("Не могу сохранить файл") + file.errorString());
+                            return;
+                        }
+                        else
+                        {//нет ошибок
+                            QString fileTitle = changedTitle(fileName);
+                            QTextStream stream(&file); //сохранение текста
+                            stream.setCodec("UTF-8"); //записываем в кодеке ЮТФ-8
+                            stream << ui->textEdit->toPlainText(); //записывание текста
+                            stream.flush(); //чистка буферизованных данных, ожидающих записи на утройстве
+                            file.close(); //закрыли файл
+                            setWindowTitle(fileTitle); //поменяли название окна
+                        }
+                    }
+                    else //если нажали отмена
+                    {
+                        fileName = fileSaveName;
+                        QString fileTitle = changedTitle(fileSaveName);
+                        setWindowTitle("*" + fileTitle); //смена названия файла
+                        break;
+                    }
+                }
+                setWindowTitle(oldPath.remove("*"));
                 on_openAction_triggered(); //вызываем открытие еще раз
                 break;
             }
             case QMessageBox::Discard:
             {// Нажата кнопка Discard
+                QString fileOpenName(fileName);
+
                 fileName = QFileDialog::getOpenFileName(this, tr("Открыть файл"), "", tr("Текстовые файлы (*.txt)")); //открываем файл
 
-                if (fileName != "") //проверка на название файла
+                if (!fileName.isEmpty()) //проверка на название файла
                 {
                     QFile file(fileName); //читаем название
 
@@ -111,7 +172,11 @@ void MainWindow::on_openAction_triggered() //кнопка "Открыть"
                     setWindowTitle(fileTitle); //смена названия файла
                 }
                 else
-                    fileName = oldPath;
+                {
+                    fileName = fileOpenName;
+                    QString fileTitle = changedTitle(fileOpenName);
+                    setWindowTitle("*" + fileTitle); //смена названия файла
+                }
                 break;
             }
             case QMessageBox::Cancel:
@@ -122,9 +187,11 @@ void MainWindow::on_openAction_triggered() //кнопка "Открыть"
     }
     else
     {//если изменений не было, или сохранили файл
+        QString fileOpenName(fileName);
+
         fileName = QFileDialog::getOpenFileName(this, tr("Открыть файл"), "", tr("Текстовые файлы (*.txt)")); //открываем файл
 
-        if (fileName != "") //проверка на название файла
+        if (!fileName.isEmpty()) //проверка на название файла
         {
             QFile file(fileName); //читаем название
 
@@ -142,18 +209,25 @@ void MainWindow::on_openAction_triggered() //кнопка "Открыть"
             setWindowTitle(fileTitle); //смена названия файла
         }
         else//если нажали отмена
-            fileName = oldPath; //оставляем прошлое название
+        {
+            fileName = fileOpenName;
+            QString fileTitle = changedTitle(fileOpenName);
+            setWindowTitle(fileTitle); //смена названия файла
+        }
     }
 }
 
 void MainWindow::on_saveAsAction_triggered() //кнопка "Сохранить как"
 {
     QString oldPath = this->windowTitle(); //старое название
+
+    QString fileSaveName(fileName);
+
     fileName = QFileDialog::getSaveFileName(this, tr("Сохранить файл"), "", tr("Текстовые файлы (*.txt)")); //сохранить файл
 
-    if (fileName != "") //проверка на название файла
+    if (!fileName.isEmpty()) //проверка на название файла
     {
-        QFile file(fileName); //читаем название
+        QFile file(fileName.remove("*")); //читаем название
 
         if (!file.open(QIODevice::WriteOnly)) //если ошибка в файле
         {
@@ -172,7 +246,11 @@ void MainWindow::on_saveAsAction_triggered() //кнопка "Сохранить 
         }
     }
     else //если нажали отмена
-        fileName = oldPath; //присвоили старое значение названию документа
+    {
+        fileName = fileSaveName;
+        QString fileTitle = changedTitle(fileSaveName);
+        setWindowTitle("*" + fileTitle); //смена названия файла
+    }
 }
 
 void MainWindow::on_saveAction_triggered() //кнопка "Сохранить"
@@ -221,12 +299,45 @@ void MainWindow::on_exitAction_triggered() //кнопка "Выход"
         {
             case QMessageBox::Save:
             {// Нажата кнопка Save
+
                 if (fileExists(fileName)) //проверка на существование документа в системе
                     on_saveAction_triggered(); //сохраинть документ
                 else
-                    on_saveAsAction_triggered(); // сохранить как доумент
+                {
+                    QString fileSaveName(fileName);
 
-                this->close(); //закрыли документ
+                    fileName = QFileDialog::getSaveFileName(this, tr("Сохранить файл"), "", tr("Текстовые файлы (*.txt)")); //сохранить файл
+
+                    if (!fileName.isEmpty()) //проверка на название файла
+                    {
+                        QFile file(fileName); //читаем название
+
+                        if (!file.open(QIODevice::WriteOnly)) //если ошибка в файле
+                        {
+                            QMessageBox::warning(this, tr("Ошибка"), tr("Не могу сохранить файл") + file.errorString());
+                            return;
+                        }
+                        else
+                        {//нет ошибок
+                            QString fileTitle = changedTitle(fileName);
+                            QTextStream stream(&file); //сохранение текста
+                            stream.setCodec("UTF-8"); //записываем в кодеке ЮТФ-8
+                            stream << ui->textEdit->toPlainText(); //записывание текста
+                            stream.flush(); //чистка буферизованных данных, ожидающих записи на утройстве
+                            file.close(); //закрыли файл
+                            setWindowTitle(fileTitle); //поменяли название окна
+                        }
+                    }
+                    else //если нажали отмена
+                    {
+                        fileName = fileSaveName;
+                        QString fileTitle = changedTitle(fileSaveName);
+                        setWindowTitle("*" + fileTitle); //смена названия файла
+                        break;
+                    }
+                }
+                setWindowTitle(path.remove("*"));
+                QApplication::quit(); //закрыть документ
                 break;
             }
             case QMessageBox::Discard:
@@ -283,9 +394,41 @@ void MainWindow::closeEvent(QCloseEvent *event) //функция выхода и
                 if (fileExists(fileName)) //проверка на существование документа в системе
                     on_saveAction_triggered(); //сохраинть документ
                 else
-                    on_saveAsAction_triggered(); // сохранить как доумент
+                {
+                    QString fileSaveName(fileName);
 
-                event->accept(); //закрыли документ
+                    fileName = QFileDialog::getSaveFileName(this, tr("Сохранить файл"), "", tr("Текстовые файлы (*.txt)")); //сохранить файл
+
+                    if (!fileName.isEmpty()) //проверка на название файла
+                    {
+                        QFile file(fileName); //читаем название
+
+                        if (!file.open(QIODevice::WriteOnly)) //если ошибка в файле
+                        {
+                            QMessageBox::warning(this, tr("Ошибка"), tr("Не могу сохранить файл") + file.errorString());
+                            return;
+                        }
+                        else
+                        {//нет ошибок
+                            QString fileTitle = changedTitle(fileName);
+                            QTextStream stream(&file); //сохранение текста
+                            stream.setCodec("UTF-8"); //записываем в кодеке ЮТФ-8
+                            stream << ui->textEdit->toPlainText(); //записывание текста
+                            stream.flush(); //чистка буферизованных данных, ожидающих записи на утройстве
+                            file.close(); //закрыли файл
+                            setWindowTitle(fileTitle); //поменяли название окна
+                        }
+                    }
+                    else //если нажали отмена
+                    {
+                        fileName = fileSaveName;
+                        QString fileTitle = changedTitle(fileSaveName);
+                        setWindowTitle("*" + fileTitle); //смена названия файла
+                        event->ignore();
+                        break;
+                    }
+                }
+                setWindowTitle(path.remove("*"));
                 break;
             }
             case QMessageBox::Discard:
@@ -311,12 +454,10 @@ void MainWindow::on_undoTextAction_triggered() //кнопка "Отменить"
     ui->textEdit->undo();
 }
 
-
 void MainWindow::on_cutTextAction_triggered() //кнопка "Вырезать"
 {
     ui->textEdit->cut();
 }
-
 
 void MainWindow::on_copyTextAction_triggered() //кнопка "Копировать"
 {
