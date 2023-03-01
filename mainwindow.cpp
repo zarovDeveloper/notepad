@@ -42,6 +42,7 @@ void MainWindow::on_createAction_triggered() //кнопка "Создать"
                     on_saveAction_triggered(); //сохраняем файл в системе
                 else //если не существует
                 {
+                    QString fileCreateName(fileName); //старый путь
                     QString oldPath = this->windowTitle(); //старое название
                     fileName = QFileDialog::getSaveFileName(this, tr("Сохранить файл"), "", tr("Текстовые файлы (*.txt)")); //сохранить файл
 
@@ -66,7 +67,12 @@ void MainWindow::on_createAction_triggered() //кнопка "Создать"
                         }
                     }
                     else //если нажали отмена; //сохраняем файл
+                    {
+                        fileName = fileCreateName;
+                        QString fileTitle = changedTitle(fileCreateName);
+                        setWindowTitle("*" + fileTitle); //смена названия файла
                         break;
+                    }
                 }
                 setWindowTitle(oldPath.remove("*"));
                 on_createAction_triggered(); //вызываем создание еще раз
@@ -268,7 +274,7 @@ void MainWindow::on_saveAction_triggered() //кнопка "Сохранить"
         }
         else
         {//нет ошибок
-            QString fileTitle = changedTitle(path); //измели название окна
+            QString fileTitle = changedTitle(path.remove("*")); //измели название окна
             QTextStream stream(&file); //сохранение текста
             stream.setCodec("UTF-8"); //записываем в кодеке ЮТФ-8
             stream << ui->textEdit->toPlainText(); //записывание текста
