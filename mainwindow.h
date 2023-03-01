@@ -55,6 +55,11 @@ private slots:
 
     void closeEvent(QCloseEvent *event); //слот выхода из документа
 
+    //оформление
+
+    void on_LightThemeAction_triggered(); //светлое оформление
+
+    void on_DarkThemeAction_triggered(); //темное оформление
 
 private:
     Ui::MainWindow *ui;

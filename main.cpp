@@ -5,6 +5,8 @@ int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
     a.setQuitOnLastWindowClosed(true);
+    qApp->setStyle(QStyleFactory::create("Fusion"));
+
     MainWindow w;
     w.show();
 
