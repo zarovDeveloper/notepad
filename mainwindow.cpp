@@ -493,7 +493,6 @@ void MainWindow::on_dateTimeAction_triggered() //кнопка "Дата и вр�
 
 //смена темы
 
-
 void MainWindow::on_LightThemeAction_triggered() //стандартная тема
 {
     qApp->setPalette(this->style()->standardPalette());
@@ -522,3 +521,4 @@ void MainWindow::on_DarkThemeAction_triggered() //темная тема
     // Устанавливаем данную палитру
     qApp->setPalette(darkPalette);
 }
+

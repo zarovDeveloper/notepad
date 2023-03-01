@@ -6,6 +6,8 @@
 #include <iostream>
 #include <string>
 #include <QCloseEvent>
+#include <QPrinter>
+#include <QPrintDialog>
 
 namespace Ui {
 class MainWindow;
@@ -60,6 +62,7 @@ private slots:
     void on_LightThemeAction_triggered(); //светлое оформление
 
     void on_DarkThemeAction_triggered(); //темное оформление
+
 
 private:
     Ui::MainWindow *ui;

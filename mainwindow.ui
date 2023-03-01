@@ -47,6 +47,7 @@
     <addaction name="saveAsAction"/>
     <addaction name="separator"/>
     <addaction name="exitAction"/>
+    <addaction name="separator"/>
    </widget>
    <widget class="QMenu" name="menu_2">
     <property name="title">
